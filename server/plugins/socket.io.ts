@@ -64,7 +64,7 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
 
     // 當使用者斷線時，從列表中移除
     socket.on("disconnect", () => {
-      connectedUsers.delete(socket.id);
+      connectedUsers.delete(user);
       console.log("Client disconnected:", socket.id);
 
       // 廣播更新後的已連線使用者列表
