@@ -3,6 +3,8 @@ import { socket } from "./socket";
 
 const isConnected = ref(false);
 const transport = ref("N/A");
+const message = ref("");
+const reciveMessage = ref("");
 
 if (socket.connected) {
   onConnect();
@@ -29,7 +31,7 @@ const test = ref(0);
 socket.on("connect", onConnect);
 socket.on("message", (value) => {
   console.log("Received message:", value);
-  test.value = value;
+  reciveMessage.value = value;
 });
 socket.on("connectedUsers", (value) => {
   console.log("Received connectedUsers:", value);
@@ -43,15 +45,45 @@ onBeforeUnmount(() => {
 });
 
 const sendMessage = () => {
-  socket.emit("message", "Hello, world!");
+  socket.emit("message", message.value);
+  message.value = "";
+};
+
+const cleanMessage = () => {
+  socket.emit("clean");
 };
 </script>
 
 <template>
-  <div>
-    <p>Status: {{ isConnected ? "connected" : "disconnected" }}</p>
-    <p>Transport: {{ transport }}</p>
+  <div class="main">
+    <div>
+      <div>
+        <p>Current User: {{ test }}</p>
+        <p>Status: {{ isConnected ? "connected" : "disconnected" }}</p>
+        <p>Transport: {{ transport }}</p>
+      </div>
+      <div>
+        <input v-model="message" type="text" @keyup.enter="sendMessage" />
+        <button type="button" @click="sendMessage">send</button>
+        <button type="button" @click="cleanMessage">clean</button>
+      </div>
+    </div>
+    <div class="message">
+      <p v-for="msg in reciveMessage" :key="msg.user + msg.message">
+        <strong>{{ msg.user }}:</strong> {{ msg.message }}
+      </p>
+    </div>
   </div>
-  <button type="button" @click="sendMessage">send</button>
-  {{ test }}
 </template>
+<style scoped>
+.main {
+  display: flex;
+  gap: 10px;
+}
+.message {
+  border: 1px solid #000;
+  height: 50vh;
+  width: 100%;
+  overflow: auto;
+}
+</style>
