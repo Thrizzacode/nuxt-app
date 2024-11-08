@@ -93,12 +93,12 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
   nitroApp.router.use(
     "/socket.io/",
     defineEventHandler({
-      handler(event) {
+      handler(event: any) {
         engine.handleRequest(event.node.req, event.node.res);
         event._handled = true;
       },
       websocket: {
-        open(peer) {
+        open(peer: any) {
           // @ts-expect-error private method and property
           engine.prepare(peer._internal.nodeReq);
           // @ts-expect-error private method and property

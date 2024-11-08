@@ -2,7 +2,13 @@
   <div class="main">
     <div>
       <div>
-        <p>Current User: {{ test }}</p>
+        <p>Online User: {{ users.length }}</p>
+        <p>
+          Current User:<br />
+          <ol>
+          <li v-for="item in users"> {{ item }}</li>
+          </ol>
+        </p>
         <p>Status: {{ isConnected ? "connected" : "disconnected" }}</p>
         <p>Transport: {{ transport }}</p>
       </div>
@@ -60,18 +66,13 @@ socket.on("message", (value) => {
   });
 });
 
-const test = ref("");
+const users = ref("");
 socket.on("connectedUsers", (value) => {
   console.log("Received connectedUsers:", value);
-  test.value = value;
+  users.value = value;
 });
 
 socket.on("disconnect", onDisconnect);
-
-onBeforeUnmount(() => {
-  socket.off("connect", onConnect);
-  socket.off("disconnect", onDisconnect);
-});
 
 const sendMessage = () => {
   if (message.value === "") return;
@@ -82,6 +83,11 @@ const sendMessage = () => {
 const cleanMessage = () => {
   socket.emit("clean");
 };
+
+onBeforeUnmount(() => {
+  socket.off("connect", onConnect);
+  socket.off("disconnect", onDisconnect);
+});
 </script>
 <style scoped>
 .main {
