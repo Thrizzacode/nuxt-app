@@ -50,7 +50,6 @@ function onDisconnect() {
   transport.value = "N/A";
 }
 
-const test = ref(0);
 socket.on("connect", onConnect);
 
 socket.on("message", (value) => {
@@ -61,6 +60,7 @@ socket.on("message", (value) => {
   });
 });
 
+const test = ref("");
 socket.on("connectedUsers", (value) => {
   console.log("Received connectedUsers:", value);
   test.value = value;
@@ -74,6 +74,7 @@ onBeforeUnmount(() => {
 });
 
 const sendMessage = () => {
+  if (message.value === "") return;
   socket.emit("message", message.value);
   message.value = "";
 };
