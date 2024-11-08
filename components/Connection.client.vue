@@ -15,6 +15,9 @@ function onConnect() {
   socket.io.engine.on("upgrade", (rawTransport) => {
     transport.value = rawTransport.name;
   });
+
+  // 請求當前的已連線使用者列表
+  socket.emit("requestConnectedUsers");
 }
 
 function onDisconnect() {
@@ -26,6 +29,10 @@ const test = ref(0);
 socket.on("connect", onConnect);
 socket.on("message", (value) => {
   console.log("Received message:", value);
+  test.value = value;
+});
+socket.on("connectedUsers", (value) => {
+  console.log("Received connectedUsers:", value);
   test.value = value;
 });
 socket.on("disconnect", onDisconnect);
