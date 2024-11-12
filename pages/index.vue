@@ -169,7 +169,13 @@
     <div
       class="flex flex-col gap-20px text-white bg-#200731 p-20px w-400px h-90% rounded-lg ml-20px text-18px font-bold"
     >
-      <div>ChatRoom</div>
+      <div class="flex justify-between">
+        <span>ChatRoom</span>
+        <div>
+          <span>Online User : </span>
+          <span>{{ users.length }}</span>
+        </div>
+      </div>
 
       <div class="message" ref="messageList">
         <p v-for="msg in reciveMessage" :key="msg.user + msg.message">
@@ -260,6 +266,8 @@ const cashouted = ref(false);
 const isCrashed = ref(false);
 
 const rank = ref([]);
+const users = ref([]);
+const onlineUser = ref(0);
 
 const betResult = ref([]);
 
@@ -324,6 +332,11 @@ onMounted(() => {
     nextTick(() => {
       messageList.value.scrollTop = messageList.value.scrollHeight;
     });
+  });
+
+  socket.on("connectedUsers", (value) => {
+    console.log("Received connectedUsers:", value);
+    users.value = value;
   });
 });
 

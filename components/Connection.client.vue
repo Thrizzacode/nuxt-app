@@ -64,7 +64,7 @@ socket.on("message", (value) => {
   });
 });
 
-const users = ref("");
+const users = ref([]);
 socket.on("connectedUsers", (value) => {
   console.log("Received connectedUsers:", value);
   users.value = value;
