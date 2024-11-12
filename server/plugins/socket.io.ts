@@ -93,12 +93,13 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
 
   // 开始游戏
   const startGame = () => {
+    isCountingDown = false;
     // 生成随机结果
-    // result = 0.99 / (1 - Math.random());
-    result = 1.2;
+    result = 0.99 / (1 - Math.random());
+    // result = 1.2;
     console.log("Game started, result is", result);
     currentMultiplier = 1.0;
-    io.emit("start", { type: "gameStart", result });
+    io.emit("start", result);
     // 累加倍率
     gameInterval = setInterval(() => {
       currentMultiplier += 0.01;
@@ -143,6 +144,9 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
     socket.on("requestConnectedUsers", () => {
       socket.emit("connectedUsers", Array.from(connectedUsers));
       socket.emit("message", messageQueue);
+      if (!isCountingDown) {
+        io.emit("start", result);
+      }
       // 初始时启动倒计时
     });
 
