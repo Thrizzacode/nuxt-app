@@ -10,13 +10,21 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "@unocss/reset": "^0.64.0",
+    "animejs": "^3.2.2",
     "engine.io": "^6.6.2",
     "nuxt": "^3.14.159",
     "socket.io": "^4.8.1",
     "socket.io-client": "^4.8.1",
+    "sweetalert2": "^11.14.5",
     "vue": "latest",
     "vue-router": "latest",
     "ws": "^8.18.0"
   },
-  "packageManager": "pnpm@9.1.4+sha1.2432063d815cfa88fd9fef1d85a445e3f609851d"
+  "packageManager": "pnpm@9.1.4+sha1.2432063d815cfa88fd9fef1d85a445e3f609851d",
+  "devDependencies": {
+    "@unocss/nuxt": "^0.64.0",
+    "sass-embedded": "^1.80.6",
+    "unocss": "^0.64.0"
+  }
 }

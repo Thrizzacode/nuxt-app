@@ -3,12 +3,10 @@
     <div>
       <div>
         <p>Online User: {{ users.length }}</p>
-        <p>
-          Current User:<br />
-          <ol>
-          <li v-for="item in users"> {{ item }}</li>
-          </ol>
-        </p>
+        <p>Current User:<br /></p>
+        <ol>
+          <li v-for="item in users">{{ item }}</li>
+        </ol>
         <p>Status: {{ isConnected ? "connected" : "disconnected" }}</p>
         <p>Transport: {{ transport }}</p>
       </div>

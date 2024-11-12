@@ -7,4 +7,9 @@ export default defineNuxtConfig({
       websocket: true,
     },
   },
+  modules: ["@unocss/nuxt"],
+  unocss: {
+    preflight: true,
+  },
+  css: ["@/assets/style/main.scss"],
 });

@@ -6,8 +6,11 @@ import { defineEventHandler } from "h3";
 export default defineNitroPlugin((nitroApp: NitroApp) => {
   const engine = new Engine();
   const io = new Server();
+  io.bind(engine);
   const connectedUsers = new Set<string>();
   const messageQueue: string[] = [];
+  const rankQueue: any[] = [];
+
   const kamenRiders = new Set<string>([
     "假面騎士一號",
     "假面騎士二號",
@@ -50,7 +53,72 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
     "假面騎士Gotchard",
   ]);
 
-  io.bind(engine);
+  let isCountingDown = false;
+  let countdown = 5;
+  let currentMultiplier = 1.0;
+  let result = 0;
+  let isGameStarted = false;
+  let countdownInterval: NodeJS.Timeout | null = null;
+  let gameInterval: NodeJS.Timeout | null = null;
+
+  // 开始倒计时
+  const startCountdown = () => {
+    console.log("Starting countdown");
+    isCountingDown = true;
+    countdown = 5;
+    rankQueue.length = 0;
+
+    // 清除可能存在的舊計時器
+    // if (countdownInterval) clearInterval(countdownInterval);
+    // if (gameInterval) clearInterval(gameInterval);
+
+    // 發送倒數開始事件
+    io.emit("countdownStart");
+    io.emit("rank", rankQueue);
+    io.emit("countdown", { countdown });
+
+    countdownInterval = setInterval(() => {
+      console.log("Countdown:", countdown);
+      countdown--;
+
+      if (countdown >= 0) {
+        io.emit("countdown", { countdown });
+      } else {
+        // @ts-expect-error private method and property
+        clearInterval(countdownInterval);
+        startGame(); // 倒數結束後開始遊戲
+      }
+    }, 1000);
+  };
+
+  // 开始游戏
+  const startGame = () => {
+    // 生成随机结果
+    // result = 0.99 / (1 - Math.random());
+    result = 1.2;
+    console.log("Game started, result is", result);
+    currentMultiplier = 1.0;
+    io.emit("start", { type: "gameStart", result });
+    // 累加倍率
+    gameInterval = setInterval(() => {
+      currentMultiplier += 0.01;
+      io.emit("multiplier", currentMultiplier.toFixed(2));
+      console.log("Current multiplier:", currentMultiplier.toFixed(2));
+      if (currentMultiplier >= result) {
+        // 触发崩溃
+        console.log("Crash!");
+        // @ts-expect-error private method and property
+        clearInterval(gameInterval);
+        io.emit("crash");
+        // 五秒后重新开始倒计时
+        setTimeout(() => {
+          startCountdown();
+        }, 5000);
+      }
+    }, 100); // 每100毫秒累加一次
+  };
+
+  startCountdown();
 
   io.on("connection", (socket: any) => {
     // 將新連線的使用者加入列表
@@ -60,7 +128,7 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
     console.log("Client connected:", socket.id);
 
     // 廣播目前所有已連線的使用者
-    io.emit("connectedUsers", Array.from(connectedUsers));
+    socket.emit("connectedUsers", Array.from(connectedUsers));
 
     // 當使用者斷線時，從列表中移除
     socket.on("disconnect", () => {
@@ -75,18 +143,29 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
     socket.on("requestConnectedUsers", () => {
       socket.emit("connectedUsers", Array.from(connectedUsers));
       socket.emit("message", messageQueue);
+      // 初始时启动倒计时
     });
 
     socket.on("message", (message: string) => {
       console.log("Client message:", message);
       const userMessage: any = { user: user, message: message };
       messageQueue.push(userMessage);
-      io.emit("message", messageQueue);
+      socket.emit("message", messageQueue);
     });
 
     socket.on("clean", () => {
       messageQueue.length = 0;
-      io.emit("message", messageQueue);
+      socket.emit("message", messageQueue);
+    });
+
+    socket.on("cashout", (data: any) => {
+      console.log("Client cashout:", data);
+      const userCashout: any = { user: user, multipler: data };
+      rankQueue.push(userCashout);
+      socket.emit(
+        "rank",
+        rankQueue.sort((a, b) => b.multipler - a.multipler)
+      );
     });
   });
 
