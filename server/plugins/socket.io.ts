@@ -8,6 +8,7 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
   const io = new Server();
   io.bind(engine);
   const connectedUsers = new Set<string>();
+  const userMap = new Map<string, string>();
   const messageQueue: string[] = [];
   const rankQueue: any[] = [];
 
@@ -125,11 +126,21 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
     // 將新連線的使用者加入列表
     const user =
       Array.from(kamenRiders)[Math.floor(Math.random() * kamenRiders.size)];
+    userMap.set(socket.id, user);
     connectedUsers.add(user);
     console.log("Client connected:", socket.id);
 
     // 廣播目前所有已連線的使用者
     io.emit("connectedUsers", Array.from(connectedUsers));
+
+    socket.on("updateUser", (newUsername: string) => {
+      const oldUsername = userMap.get(socket.id);
+      if (oldUsername) {
+        connectedUsers.delete(oldUsername);
+        connectedUsers.add(newUsername);
+        userMap.set(socket.id, newUsername);
+      }
+    });
 
     // 當使用者斷線時，從列表中移除
     socket.on("disconnect", () => {
@@ -151,7 +162,8 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
 
     socket.on("message", (message: string) => {
       console.log("Client message:", message);
-      const userMessage: any = { user: user, message: message };
+      const username = userMap.get(socket.id);
+      const userMessage: any = { user: username, message: message };
       messageQueue.push(userMessage);
       io.emit("message", messageQueue);
     });
@@ -163,7 +175,8 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
 
     socket.on("cashout", (data: any) => {
       console.log("Client cashout:", data);
-      const userCashout: any = { user: user, multipler: data };
+      const username = userMap.get(socket.id);
+      const userCashout: any = { user: username, multipler: data };
       rankQueue.push(userCashout);
       io.emit(
         "rank",

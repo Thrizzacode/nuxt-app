@@ -291,9 +291,29 @@ function onConnect() {
   socket.emit("requestConnectedUsers");
 }
 
+const inputValue = ref("");
 onMounted(() => {
   if (socket.connected) {
     onConnect();
+  }
+});
+onMounted(async () => {
+  const { value: name } = await Swal.fire({
+    title: "Enter your Name",
+    input: "text",
+    showCancelButton: false,
+    customClass: {
+      confirmButton: "confirmBtn",
+    },
+    inputValidator: (value) => {
+      if (!value) {
+        return "You need to tell me your name!";
+      }
+    },
+  });
+  if (name) {
+    console.log(name);
+    socket.emit("updateUser", name);
   }
 });
 socket.on("connect", onConnect);
