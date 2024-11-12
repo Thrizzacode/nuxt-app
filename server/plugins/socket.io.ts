@@ -104,7 +104,7 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
     gameInterval = setInterval(() => {
       currentMultiplier += 0.01;
       io.emit("multiplier", currentMultiplier.toFixed(2));
-      console.log("Current multiplier:", currentMultiplier.toFixed(2));
+      // console.log("Current multiplier:", currentMultiplier.toFixed(2));
       if (currentMultiplier >= result) {
         // 触发崩溃
         console.log("Crash!");
@@ -129,7 +129,7 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
     console.log("Client connected:", socket.id);
 
     // 廣播目前所有已連線的使用者
-    socket.emit("connectedUsers", Array.from(connectedUsers));
+    io.emit("connectedUsers", Array.from(connectedUsers));
 
     // 當使用者斷線時，從列表中移除
     socket.on("disconnect", () => {
@@ -142,31 +142,30 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
 
     // 處理客戶端請求已連線使用者列表的事件
     socket.on("requestConnectedUsers", () => {
-      socket.emit("connectedUsers", Array.from(connectedUsers));
-      socket.emit("message", messageQueue);
+      io.emit("connectedUsers", Array.from(connectedUsers));
+      io.emit("message", messageQueue);
       if (!isCountingDown) {
         io.emit("start", result);
       }
-      // 初始时启动倒计时
     });
 
     socket.on("message", (message: string) => {
       console.log("Client message:", message);
       const userMessage: any = { user: user, message: message };
       messageQueue.push(userMessage);
-      socket.emit("message", messageQueue);
+      io.emit("message", messageQueue);
     });
 
     socket.on("clean", () => {
       messageQueue.length = 0;
-      socket.emit("message", messageQueue);
+      io.emit("message", messageQueue);
     });
 
     socket.on("cashout", (data: any) => {
       console.log("Client cashout:", data);
       const userCashout: any = { user: user, multipler: data };
       rankQueue.push(userCashout);
-      socket.emit(
+      io.emit(
         "rank",
         rankQueue.sort((a, b) => b.multipler - a.multipler)
       );

@@ -250,6 +250,7 @@ definePageMeta({
   layout: false,
 });
 import anime from "animejs";
+import { connect } from "socket.io-client";
 import Swal from "sweetalert2";
 
 const animatedBox = ref(null);
@@ -267,9 +268,12 @@ const isCrashed = ref(false);
 
 const rank = ref([]);
 const users = ref([]);
-const onlineUser = ref(0);
 
 const betResult = ref([]);
+
+const message = ref("");
+const reciveMessage = ref([]);
+const messageList = ref(null);
 
 // WebSocket
 const isConnected = ref(false);
@@ -288,56 +292,56 @@ function onConnect() {
 }
 
 onMounted(() => {
-  socket.on("connect", onConnect);
   if (socket.connected) {
     onConnect();
   }
-  socket.on("disconnect", (reason) => {
-    console.log("disconnect", reason);
-    isConnected.value = false;
-  });
+});
+socket.on("connect", onConnect);
+socket.on("disconnect", (reason) => {
+  console.log("disconnect", reason);
+  isConnected.value = false;
+});
 
-  socket.on("countdownStart", () => {
-    startCountdown();
-  });
+socket.on("countdownStart", () => {
+  startCountdown();
+});
 
-  socket.on("countdown", (data) => {
-    console.log("Countdown", data.countdown);
-    countDown.value = data.countdown;
-  });
+socket.on("countdown", (data) => {
+  console.log("Countdown", data.countdown);
+  countDown.value = data.countdown;
+});
 
-  socket.on("multiplier", (data) => {
-    console.log("multiplier", data);
-    multipleNum.value = data;
-  });
+socket.on("multiplier", (data) => {
+  // console.log("multiplier", data);
+  multipleNum.value = data;
+});
 
-  socket.on("start", (data) => {
-    console.log("game srart");
-    result.value = data;
-    startGame();
-  });
+socket.on("start", (data) => {
+  console.log("game srart");
+  result.value = data;
+  startGame();
+});
 
-  socket.on("crash", () => {
-    crashGame();
-  });
+socket.on("crash", () => {
+  crashGame();
+});
 
-  socket.on("rank", (data) => {
-    console.log("rank", data);
-    rank.value = data;
-  });
+socket.on("rank", (data) => {
+  console.log("rank", data);
+  rank.value = data;
+});
 
-  socket.on("message", (value) => {
-    console.log("Received message:", value);
-    reciveMessage.value = value;
-    nextTick(() => {
-      messageList.value.scrollTop = messageList.value.scrollHeight;
-    });
+socket.on("message", (value) => {
+  console.log("Received message:", value);
+  reciveMessage.value = value;
+  nextTick(() => {
+    messageList.value.scrollTop = messageList.value.scrollHeight;
   });
+});
 
-  socket.on("connectedUsers", (value) => {
-    console.log("Received connectedUsers:", value);
-    users.value = value;
-  });
+socket.on("connectedUsers", (value) => {
+  console.log("Received connectedUsers:", value);
+  users.value = value;
 });
 
 const openResultDetail = (value) => {
@@ -359,7 +363,6 @@ const startCountdown = () => {
   animation.value.pause();
   curveAnimation.value.restart();
   curveAnimation.value.pause();
-  isGameStarted.value = false;
   isCrashed.value = false;
   isBet.value = false;
   multipleNum.value = 0.0;
@@ -380,6 +383,7 @@ const crashGame = () => {
   curveAnimation.value.pause();
   betResult.value.push(multipleNum.value);
   isCrashed.value = true;
+  isGameStarted.value = false;
 };
 
 const betAnimation = () => {
@@ -437,9 +441,6 @@ const max = () => {
 };
 
 // chat
-const message = ref("");
-const reciveMessage = ref("");
-const messageList = ref(null);
 const sendMessage = () => {
   if (message.value === "") return;
   socket.emit("message", message.value);
