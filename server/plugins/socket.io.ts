@@ -173,6 +173,14 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
       io.emit("message", messageQueue);
     });
 
+    socket.on("reset", () => {
+      console.log("Client reset");
+      if (gameInterval) {
+        clearInterval(gameInterval);
+      }
+      startCountdown();
+    });
+
     socket.on("cashout", (data: any) => {
       console.log("Client cashout:", data);
       const username = userMap.get(socket.id);

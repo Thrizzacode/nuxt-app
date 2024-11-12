@@ -467,6 +467,28 @@ const sendMessage = () => {
   message.value = "";
 };
 
+// 新增一個變數追蹤輸入字串
+const inputBuffer = ref("");
+
+// 監聽鍵盤輸入
+const handleKeyPress = (e) => {
+  // 將新字元加到 buffer
+  inputBuffer.value += e.key;
+
+  // 只保留最後 5 個字元
+  if (inputBuffer.value.length > 5) {
+    inputBuffer.value = inputBuffer.value.slice(-5);
+  }
+
+  // 檢查是否輸入 "reset"
+  if (inputBuffer.value.toLowerCase() === "reset") {
+    // 發送清除訊號到 server
+    socket.emit("reset");
+    // 重置 buffer
+    inputBuffer.value = "";
+  }
+};
+
 onMounted(() => {
   const path = anime.path(".container #rocketPath path");
   animation.value = anime({
@@ -486,6 +508,8 @@ onMounted(() => {
     easing: "linear",
     autoplay: false,
   });
+
+  window.addEventListener("keypress", handleKeyPress);
 });
 </script>
 
