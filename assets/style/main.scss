@@ -1,16 +1,28 @@
+@import url("https://fonts.googleapis.com/css2?family=Oxanium:wght@200..800&family=Silkscreen:wght@400;700&display=swap");
+
+* {
+  font-family: "silkScreen", sans-serif;
+  /* 適用於 Webkit 瀏覽器 (Chrome, Edge, Safari) */
+  ::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* 適用於 Firefox */
+  scrollbar-width: none; /* 隱藏滾動條 */
+  scrollbar-color: transparent transparent; /* 避免殘留背景色 */
+}
+
 body {
   height: 100vh;
+  background-color: #0f212e;
+  color: #fff;
 }
-// .main {
-//   background: linear-gradient(
-//     174deg,
-//     rgba(0, 212, 255, 1) 0%,
-//     rgba(6, 6, 88, 1) 23%,
-//     rgba(9, 9, 121, 1) 65%,
-//     rgba(2, 0, 36, 1) 100%
-//   );
-// }
 
 .confirmBtn {
   background-color: #7066e0 !important;
+}
+
+// 禁用input focus外框
+input:focus {
+  outline: none;
 }

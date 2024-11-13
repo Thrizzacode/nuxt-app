@@ -7,7 +7,7 @@ export default defineNuxtConfig({
       websocket: true,
     },
   },
-  modules: ["@unocss/nuxt"],
+  modules: ["@unocss/nuxt", "@nuxt/icon", "@pinia/nuxt"],
   unocss: {
     preflight: true,
   },

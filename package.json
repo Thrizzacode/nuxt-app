@@ -10,6 +10,7 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "@nuxt/icon": "^1.7.2",
     "@unocss/reset": "^0.64.0",
     "animejs": "^3.2.2",
     "engine.io": "^6.6.2",
@@ -23,6 +24,7 @@
   },
   "packageManager": "pnpm@9.1.4+sha1.2432063d815cfa88fd9fef1d85a445e3f609851d",
   "devDependencies": {
+    "@pinia/nuxt": "^0.7.0",
     "@unocss/nuxt": "^0.64.0",
     "sass-embedded": "^1.80.6",
     "unocss": "^0.64.0"
