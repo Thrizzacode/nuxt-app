@@ -1,33 +1,56 @@
 <template>
   <div class="flex h-full w-full">
     <!-- left -->
-    <div class="bg-#182c37 w-300px p-10px">
-      <div class="flex">
+    <div class="relative bg-#182c37 p-10px">
+      <div class="flex gap-5px mb-20px">
         <Icon name="fluent-emoji:person-mage" size="48px" />
         <div>
           <div>{{ userName }}</div>
-          <div class="text-#888 font-bold">$ {{ balance }}</div>
+          <div class="text-#888 font-bold">$ {{ balance.toFixed(2) }}</div>
         </div>
       </div>
-      <div class="flex flex-col text-20px">
-        <NuxtLink to="/">Home</NuxtLink>
-        <NuxtLink to="/game">Crash Game</NuxtLink>
+      <div class="flex flex-col gap-10px text-20px">
+        <NuxtLink to="/" class="flex items-center gap-10px">
+          <Icon name="material-symbols:house-rounded" />
+          Home</NuxtLink
+        >
+        <NuxtLink to="/game" class="flex items-center gap-10px">
+          <Icon name="material-symbols:rocket" />
+          Crash Game</NuxtLink
+        >
+
+        <NuxtLink to="/" class="flex items-center gap-10px">
+          <Icon name="mdi:dots-triangle" />
+          Plinko</NuxtLink
+        >
+      </div>
+      <div
+        class="btnFn center gap-10px absolute bottom-10px right-10px rounded-lg p-8px w-100px text-center"
+        @click="login"
+      >
+        <Icon name="material-symbols:account-balance-wallet" size="18px" />
+        {{ loginText }}
       </div>
     </div>
 
-    <div class="w-[calc(100%-640px)]">
+    <div class="grow-1">
       <slot />
     </div>
 
     <!-- right -->
-    <div class="bg-#182c37 w-340px">
-      <!-- 聊天室 -->
-      <div class="flex flex-col gap-20px p-20px h-full rounded-lg">
-        <div class="flex justify-between items-end">
-          <div class="text-18px font-bold">ChatRoom</div>
-          <div class="text-14px leading-25px">
-            <span>Online User : </span>
-            <span>{{ users.length }}</span>
+    <!-- 聊天室 -->
+    <div class="bg-#182c37 w-340px" :class="isChatOpen ? 'block' : 'hidden'">
+      <div class="flex flex-col gap-10px p-20px h-full rounded-lg">
+        <div class="flex justify-between">
+          <div class="flex flex-col justify-between items-start">
+            <div class="text-18px font-bold">ChatRoom</div>
+            <div class="text-14px">
+              <span>Online User : </span>
+              <span>{{ users.length }}</span>
+            </div>
+          </div>
+          <div class="text-20px cursor-pointer" @click="isChatOpen = false">
+            X
           </div>
         </div>
 
@@ -56,7 +79,7 @@
           />
           <button
             type="button"
-            class="bg-#22c55e w-50px rounded-lg center hover:bg-#1f9d4d transition-all"
+            class="btnFn w-50px rounded-lg center transition-all"
             @click="sendMessage"
           >
             <Icon name="iconamoon:send" />
@@ -71,19 +94,32 @@
         </div>
       </div>
     </div>
+
+    <!-- chatFloatBtn -->
+    <div
+      v-if="!isChatOpen"
+      class="btnFn absolute right-5 top-5 size-40px center rounded-full"
+      @click="isChatOpen = true"
+    >
+      <Icon name="material-symbols:android-chat-outline" size="24" />
+    </div>
   </div>
 </template>
 
 <script setup>
+import Swal from "sweetalert2";
 const message = ref("");
 const reciveMessage = ref([]);
 const messageList = ref(null);
 const users = ref([]);
 const userName = ref("");
+const isChatOpen = ref(true);
+
+const loginText = computed(() => (isLogin.value ? "Logout" : "Login"));
 
 // pinia
 const userStore = useUserStore();
-const { balance } = storeToRefs(userStore);
+const { balance, isLogin } = storeToRefs(userStore);
 
 // 請求當前的已連線使用者列表
 socket.emit("requestConnectedUsers");
@@ -107,6 +143,35 @@ socket.on("message", (value) => {
 });
 
 // chat
+const login = async () => {
+  if (isLogin.value) {
+    isLogin.value = false;
+    return;
+  }
+  const { value: name } = await Swal.fire({
+    title: "Login",
+    background: "#182c37",
+    input: "text",
+    inputLabel: "Username",
+    customClass: {
+      title: "alertTitle",
+      input: "alertTitle",
+      inputLabel: "alertTitle",
+      confirmButton: "confirmBtn",
+    },
+    inputValidator: (value) => {
+      if (!value) {
+        return "You need to enter username!";
+      }
+    },
+  });
+  if (name) {
+    console.log(name);
+    isLogin.value = true;
+    socket.emit("updateUser", name);
+  }
+};
+
 const sendMessage = () => {
   if (message.value === "") return;
   socket.emit("message", message.value);

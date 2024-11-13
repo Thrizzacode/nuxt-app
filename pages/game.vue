@@ -206,12 +206,15 @@
 import anime from "animejs";
 import Swal from "sweetalert2";
 
+// pinia
+const userStore = useUserStore();
+const { balance } = storeToRefs(userStore);
+
 const animatedBox = ref(null);
 const animation = ref(null);
 const curveAnimation = ref(null);
 const multipleNum = ref(0.0);
 const betAmount = ref(10);
-const balance = ref(10000);
 const currentResult = ref(0);
 
 const isGameStarted = ref(false);
@@ -245,25 +248,7 @@ onMounted(() => {
     onConnect();
   }
 });
-onMounted(async () => {
-  const { value: name } = await Swal.fire({
-    title: "Enter your Name",
-    input: "text",
-    showCancelButton: false,
-    customClass: {
-      confirmButton: "confirmBtn",
-    },
-    inputValidator: (value) => {
-      if (!value) {
-        return "You need to tell me your name!";
-      }
-    },
-  });
-  if (name) {
-    console.log(name);
-    socket.emit("updateUser", name);
-  }
-});
+onMounted(async () => {});
 socket.on("connect", onConnect);
 socket.on("disconnect", (reason) => {
   console.log("disconnect", reason);

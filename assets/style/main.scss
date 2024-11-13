@@ -1,7 +1,7 @@
-@import url("https://fonts.googleapis.com/css2?family=Oxanium:wght@200..800&family=Silkscreen:wght@400;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=LXGW+WenKai+Mono+TC&family=Silkscreen:wght@400;700&display=swap");
 
 * {
-  font-family: "silkScreen", sans-serif;
+  font-family: "silkScreen", "LXGW WenKai Mono TC", monospace, sans-serif;
   /* 適用於 Webkit 瀏覽器 (Chrome, Edge, Safari) */
   ::-webkit-scrollbar {
     display: none;
@@ -18,6 +18,9 @@ body {
   color: #fff;
 }
 
+.alertTitle {
+  color: #fff;
+}
 .confirmBtn {
   background-color: #7066e0 !important;
 }

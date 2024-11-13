@@ -140,6 +140,7 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
         connectedUsers.add(newUsername);
         userMap.set(socket.id, newUsername);
       }
+      socket.emit("userName", newUsername);
     });
 
     // 當使用者斷線時，從列表中移除
