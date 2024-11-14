@@ -1,7 +1,7 @@
 <template>
   <div class="flex h-full w-full">
     <!-- left -->
-    <div class="relative bg-#182c37 p-10px">
+    <div class="relative w-280px bg-#182c37 p-10px">
       <div class="flex gap-5px mb-20px">
         <Icon name="fluent-emoji:person-mage" size="48px" />
         <div>
@@ -25,7 +25,7 @@
         >
       </div>
       <div
-        class="btnFn center gap-10px absolute bottom-10px right-10px rounded-lg p-8px w-100px text-center"
+        class="btnFn center gap-10px absolute bottom-10px right-10px rounded-lg p-8px text-center"
         @click="login"
       >
         <Icon name="material-symbols:account-balance-wallet" size="18px" />
@@ -33,7 +33,7 @@
       </div>
     </div>
 
-    <div class="grow-1">
+    <div class="grow-1 relative">
       <slot />
     </div>
 
