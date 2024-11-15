@@ -13,6 +13,7 @@
     "@nuxt/icon": "^1.7.2",
     "@unocss/reset": "^0.64.0",
     "animejs": "^3.2.2",
+    "crypto-js": "^4.2.0",
     "engine.io": "^6.6.2",
     "nuxt": "^3.14.159",
     "socket.io": "^4.8.1",
