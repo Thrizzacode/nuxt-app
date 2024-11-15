@@ -112,6 +112,7 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
       }
     );
   }
+
   let hashChain: string[] = [];
 
   const generateHashChain = (previousHash: string, count: number) => {
@@ -121,6 +122,7 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
     const generate = (hash: string, currentCount: number) => {
       if (currentCount >= 10000) {
         // 結束計時並顯示執行時間
+        console.log(hashChain);
         console.timeEnd("generateHashChain");
         return;
       }
@@ -157,12 +159,14 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
     return floats;
   };
 
+  let index = 1;
   // 开始游戏
   const startGame = () => {
     isCountingDown = false;
     let step = 0.01;
-    let result = hashToFloats(hashChain.shift() || "");
-
+    let result = hashToFloats(hashChain[hashChain.length - index] || "");
+    index++;
+    console.log(hashChain[hashChain.length - index]);
     crashPoint = (0.99 * 1) / (1 - result[0]);
     console.log(crashPoint);
     console.log("Game started, result is", crashPoint);
