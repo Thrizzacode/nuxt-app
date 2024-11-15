@@ -64,6 +64,10 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
   let countdownInterval: NodeJS.Timeout | null = null;
   let gameInterval: NodeJS.Timeout | null = null;
 
+  const truncateTo2 = (num: number) => {
+    return Math.trunc(num * 100) / 100;
+  };
+
   // 开始倒计时
   const startCountdown = () => {
     console.log("Starting countdown");
@@ -171,7 +175,7 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
     console.log(crashPoint);
     console.log("Game started, result is", crashPoint);
     currentMultiplier = 1.0;
-    io.emit("start", crashPoint);
+    io.emit("start", truncateTo2(crashPoint));
     // 累加倍率
     gameInterval = setInterval(() => {
       // if (currentMultiplier >= 100) {
@@ -200,7 +204,7 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
       step += 0.001;
       // console.log(step);
       currentMultiplier += step;
-      io.emit("multiplier", currentMultiplier.toFixed(2));
+      io.emit("multiplier", truncateTo2(currentMultiplier));
       // console.log("Current multiplier:", currentMultiplier.toFixed(2));
       if (currentMultiplier >= crashPoint) {
         // 触发崩溃
@@ -208,6 +212,7 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
         // @ts-expect-error private method and property
         clearInterval(gameInterval);
         io.emit("crash");
+        io.emit("multiplier", truncateTo2(crashPoint));
         // 五秒后重新开始倒计时
         setTimeout(() => {
           startCountdown();

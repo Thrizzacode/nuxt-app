@@ -79,7 +79,7 @@
       Reset
     </button> -->
         <div class="flex items-center justify-between">
-          <span>{{ result.toFixed(2) }}</span>
+          <span>{{ result }}</span>
           <div class="flex items-center gap-10px">
             <span>Network Status:</span>
             <div
