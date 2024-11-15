@@ -219,6 +219,15 @@
       </button>
     </div>
   </dialog>
+
+  <!-- loading -->
+  <div
+    v-if="isLoading"
+    class="absolute top-0 w-full h-full bg-#222 z-10 center"
+  >
+    <!-- <img src="@/assets/images/loading.gif" class="size-30px" /> -->
+    <Loading />
+  </div>
 </template>
 
 <script setup>
@@ -253,6 +262,15 @@ const btnStatus = computed(() => ({
   "bg-#06F100": isBet.value && isGameStarted.value && !cashouted.value,
   "bg-#03AD00 cursor-not-allowed": cashouted.value,
 }));
+
+// loading
+const isLoading = ref(true);
+
+onMounted(() => {
+  setTimeout(() => {
+    isLoading.value = false;
+  }, 1000);
+});
 
 watch(btnStatus, (value) => {
   console.log(value);

@@ -152,12 +152,13 @@
     </div>
   </div>
 
-  <!-- loagind -->
+  <!-- loading -->
   <div
     v-if="isLoading"
     class="absolute top-0 w-full h-full bg-#222 z-10 center"
   >
-    <img src="@/assets/images/loading.gif" class="size-30px" />
+    <!-- <img src="@/assets/images/loading.gif" class="size-30px" /> -->
+    <Loading />
   </div>
 </template>
 
