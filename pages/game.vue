@@ -41,15 +41,30 @@
           </div>
         </div>
 
-        <button
-          class="btn rounded-lg border-0 py-10px w-full cursor-pointer text-black"
-          :class="{ '!bg-#b29c1e cursor-not-allowed': isBet || isGameStarted }"
-          :disabled="isBet || isGameStarted"
-          @click="betAnimation"
-        >
-          Bet
-        </button>
-        <button
+        <div class="flex items-center justify-around">
+          <div class="center">
+            <div class="rounded-full size-120px bg-#7E7E7E"></div>
+            <button
+              class="absolute btn rounded-full border-0 py-10px size-100px cursor-pointer text-black"
+              :class="btnStatus"
+              :disabled="
+                (!isBet && isGameStarted) ||
+                (isBet && !isGameStarted) ||
+                isCrashed ||
+                cashouted
+              "
+              @click="doBet"
+            >
+              {{ isBet ? "Cashout" : "Bet" }}
+            </button>
+          </div>
+
+          <div class="text-green font-bold">
+            <p>Collect:</p>
+            {{ isBet ? (betAmount * multipleNum).toFixed(2) : 0 }}
+          </div>
+        </div>
+        <!-- <button
           class="btn rounded-lg border-0 py-10px w-full cursor-pointer text-black"
           :class="{
             '!bg-#b29c1e cursor-not-allowed':
@@ -59,7 +74,7 @@
           @click="cashout"
         >
           CashOut
-        </button>
+        </button> -->
         <!-- <button class="btn rounded-lg border-0 py-10px w-full cursor-pointer" @click="reset">
       Reset
     </button> -->
@@ -101,8 +116,8 @@
 
     <!-- 遊戲區 -->
     <div>
-      <div class="flex gap-10px h-46px">
-        <template v-for="(item, index) in betResult.slice(-15)" :key="index">
+      <div class="flex gap-10px h-46px w-800px overflow-auto">
+        <template v-for="(item, index) in betResult.slice(-13)" :key="index">
           <div
             class="border-1 border-solid p-5px rounded-md my-5px text-white hover:bg-amber hover:cursor-pointer"
             @click="openResultDetail(item)"
@@ -150,9 +165,6 @@
         </div>
         <div class="flex flex-col items-center z-10 mt-15%">
           <div class="text-80px text-red font-bold">{{ multipleNum }}X</div>
-          <div class="text-40px text-green font-bold">
-            Current Cashout: {{ (betAmount * multipleNum).toFixed(2) }}
-          </div>
           <div>
             <div v-if="countDown > 0" class="text-40px text-white font-bold">
               Countdown: {{ countDown }}
@@ -225,6 +237,19 @@ const isCrashed = ref(false);
 const rank = ref([]);
 
 const betResult = ref([]);
+
+const btnStatus = computed(() => ({
+  "bg-#C00000": !isBet.value && !isGameStarted.value,
+  "bg-#6F0000 cursor-not-allowed":
+    (!isBet.value && isGameStarted.value) ||
+    (isBet.value && !isGameStarted.value),
+  "bg-#06F100": isBet.value && isGameStarted.value && !cashouted.value,
+  "bg-#03AD00 cursor-not-allowed": cashouted.value,
+}));
+
+watch(btnStatus, (value) => {
+  console.log(value);
+});
 
 // WebSocket
 const isConnected = ref(false);
@@ -303,7 +328,9 @@ const startCountdown = () => {
   animation.value.pause();
   curveAnimation.value.restart();
   curveAnimation.value.pause();
+  cashouted.value = false;
   isCrashed.value = false;
+  isGameStarted.value = false;
   isBet.value = false;
   multipleNum.value = 0.0;
 };
@@ -323,13 +350,16 @@ const crashGame = () => {
   curveAnimation.value.pause();
   betResult.value.push(multipleNum.value);
   isCrashed.value = true;
-  isGameStarted.value = false;
 };
 
-const betAnimation = () => {
+const doBet = () => {
+  console.log(isBet.value, isGameStarted.value);
+  if (isBet.value && isGameStarted.value) {
+    cashout();
+    return;
+  }
   balance.value -= betAmount.value;
   isBet.value = true;
-  cashouted.value = false;
 };
 
 const cashout = () => {
@@ -454,8 +484,10 @@ onMounted(() => {
 
 .btn {
   font-size: 18px;
-  background-color: #fdaa10;
   transition: all 0.18s ease-in-out;
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 50px 100px -20px,
+    rgba(0, 0, 0, 0.3) 0px 30px 60px -30px,
+    rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset;
 }
 
 .btn:hover {

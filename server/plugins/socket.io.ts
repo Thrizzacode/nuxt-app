@@ -2,6 +2,8 @@ import type { NitroApp } from "nitropack";
 import { Server as Engine } from "engine.io";
 import { Server } from "socket.io";
 import { defineEventHandler } from "h3";
+// @ts-expect-error private method and property
+import CryptoJS from "crypto-js";
 
 export default defineNitroPlugin((nitroApp: NitroApp) => {
   const engine = new Engine();
@@ -57,7 +59,7 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
   let isCountingDown = false;
   let countdown = 5;
   let currentMultiplier = 1.0;
-  let result = 0;
+  let crashPoint = 0;
   let isGameStarted = false;
   let countdownInterval: NodeJS.Timeout | null = null;
   let gameInterval: NodeJS.Timeout | null = null;
@@ -70,8 +72,8 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
     rankQueue.length = 0;
 
     // 清除可能存在的舊計時器
-    // if (countdownInterval) clearInterval(countdownInterval);
-    // if (gameInterval) clearInterval(gameInterval);
+    if (countdownInterval) clearInterval(countdownInterval);
+    if (gameInterval) clearInterval(gameInterval);
 
     // 發送倒數開始事件
     io.emit("countdownStart");
@@ -92,21 +94,111 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
     }, 1000);
   };
 
+  // GUID
+  function _uuid() {
+    var d = Date.now();
+    if (
+      typeof performance !== "undefined" &&
+      typeof performance.now === "function"
+    ) {
+      d += performance.now(); //use high-precision timer if available
+    }
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
+      /[xy]/g,
+      function (c) {
+        var r = (d + Math.random() * 16) % 16 | 0;
+        d = Math.floor(d / 16);
+        return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
+      }
+    );
+  }
+  let hashChain: string[] = [];
+
+  const generateHashChain = (previousHash: string, count: number) => {
+    // 開始計時
+    console.time("generateHashChain");
+
+    const generate = (hash: string, currentCount: number) => {
+      if (currentCount >= 10000) {
+        // 結束計時並顯示執行時間
+        console.timeEnd("generateHashChain");
+        return;
+      }
+
+      const newHash = CryptoJS.SHA256(hash).toString(CryptoJS.enc.Hex);
+      hashChain.push(newHash);
+      generate(newHash, currentCount + 1);
+    };
+
+    // 開始生成
+    generate(previousHash, count);
+  };
+
+  // 初始呼叫
+  const startHash = CryptoJS.SHA256(_uuid()).toString(CryptoJS.enc.Hex);
+  hashChain.push(startHash);
+  generateHashChain(startHash, 1);
+
+  const hashToFloats = (hash: string) => {
+    const floats: number[] = [];
+    const chunkSize = 8;
+
+    // 切分成8組
+    for (let i = 0; i < hash.length; i += chunkSize) {
+      const chunk = hash.slice(i, i + chunkSize);
+
+      // 十六進制轉十進制後除以16^8
+      const decimal = parseInt(chunk, 16);
+      const float = decimal / Math.pow(16, 8);
+
+      floats.push(float);
+    }
+
+    return floats;
+  };
+
   // 开始游戏
   const startGame = () => {
     isCountingDown = false;
-    // 生成随机结果
-    result = 0.99 / (1 - Math.random());
-    // result = 1.2;
-    console.log("Game started, result is", result);
+    let step = 0.01;
+    let result = hashToFloats(hashChain.shift() || "");
+
+    crashPoint = (0.99 * 1) / (1 - result[0]);
+    console.log(crashPoint);
+    console.log("Game started, result is", crashPoint);
     currentMultiplier = 1.0;
-    io.emit("start", result);
+    io.emit("start", crashPoint);
     // 累加倍率
     gameInterval = setInterval(() => {
-      currentMultiplier += 0.01;
+      // if (currentMultiplier >= 100) {
+      //   step = 1 / 8;
+      // } else if (currentMultiplier >= 20) {
+      //   step = 1 / 10;
+      // } else if (currentMultiplier >= 15) {
+      //   step = 1 / 13.3;
+      // } else if (currentMultiplier >= 9.1) {
+      //   step = 1 / 15.2;
+      // } else if (currentMultiplier >= 8.1) {
+      //   step = 1 / 17;
+      // } else if (currentMultiplier >= 7.1) {
+      //   step = 1 / 19;
+      // } else if (currentMultiplier >= 6.1) {
+      //   step = 1 / 22;
+      // } else if (currentMultiplier >= 5.1) {
+      //   step = 1 / 26.7;
+      // } else if (currentMultiplier >= 4.1) {
+      //   step = 1 / 32.1;
+      // } else if (currentMultiplier >= 3.1) {
+      //   step = 1 / 41.7;
+      // } else if (currentMultiplier >= 2.1) {
+      //   step = 1 / 58.5;
+      // }
+      step += 0.001;
+      // console.log(step);
+      currentMultiplier += step;
       io.emit("multiplier", currentMultiplier.toFixed(2));
       // console.log("Current multiplier:", currentMultiplier.toFixed(2));
-      if (currentMultiplier >= result) {
+      if (currentMultiplier >= crashPoint) {
         // 触发崩溃
         console.log("Crash!");
         // @ts-expect-error private method and property
@@ -158,7 +250,7 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
       io.emit("connectedUsers", Array.from(connectedUsers));
       io.emit("message", messageQueue);
       if (!isCountingDown) {
-        io.emit("start", result);
+        io.emit("start", crashPoint);
       }
     });
 
