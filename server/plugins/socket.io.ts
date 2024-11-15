@@ -124,7 +124,7 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
     console.time("generateHashChain");
 
     const generate = (hash: string, currentCount: number) => {
-      if (currentCount >= 10000) {
+      if (currentCount >= 1000) {
         // 結束計時並顯示執行時間
         console.log(hashChain);
         console.timeEnd("generateHashChain");
