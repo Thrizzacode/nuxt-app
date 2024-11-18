@@ -164,7 +164,7 @@
 
 <template>
   <div class="toggle-container">
-    <input class="toggle-input" type="checkbox" />
+    <input v-model="isAuto" class="toggle-input" type="checkbox" />
     <div class="toggle-handle-wrapper">
       <div class="toggle-handle">
         <div class="toggle-handle-knob"></div>
@@ -178,3 +178,7 @@
     </div>
   </div>
 </template>
+
+<script setup>
+const isAuto = defineModel();
+</script>

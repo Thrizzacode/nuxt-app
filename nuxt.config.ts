@@ -12,4 +12,13 @@ export default defineNuxtConfig({
     preflight: true,
   },
   css: ["@/assets/style/main.scss"],
+  vite: {
+    css: {
+      preprocessorOptions: {
+        scss: {
+          api: "modern",
+        },
+      },
+    },
+  },
 });

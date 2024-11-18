@@ -10,7 +10,7 @@
           <div class="flex text-white h-20px items-center">
             <div>AUTO</div>
             <!-- toggle -->
-            <AutoToggle />
+            <AutoToggle v-model="isAuto" />
           </div>
         </div>
         <div class="text-white">{{ balance.toFixed(2) }}</div>
@@ -46,6 +46,33 @@
               Max
             </button>
           </div>
+        </div>
+
+        <label for="autoCrashout">Collect:</label>
+        <div class="flex gap-10px">
+          <button
+            class="bg-#200745 px-10px rounded-md text-#5f6892 border-0 cursor-pointer hover:text-white center"
+            @click="minus"
+          >
+            -
+          </button>
+          <div div class="relative flex text-white">
+            <input
+              v-model.number="collect"
+              type="text"
+              name="collect"
+              id="collect"
+              :disabled="isBet || isGameStarted"
+              class="bg-#200790/50 pl-18px h-40px w-100px rounded-lg border-0 p-10px text-18px"
+            />
+            <p class="absolute right-10px top-1/2 -translate-y-1/2">x</p>
+          </div>
+          <button
+            class="bg-#200745 px-10px rounded-md text-#5f6892 border-0 cursor-pointer hover:text-white center"
+            @click="plus"
+          >
+            +
+          </button>
         </div>
 
         <div class="flex items-center justify-around">
@@ -99,7 +126,7 @@
 
       <!-- 排行榜 -->
       <div
-        class="flex flex-col gap-20px text-#5f6892 bg-#200731 p-20px w-400px h-400px rounded-lg mr-20px text-18px font-bold"
+        class="flex flex-col gap-20px text-#5f6892 bg-#200731 p-20px w-400px h-300px rounded-lg mr-20px text-18px font-bold"
       >
         <div class="text-white">Rank</div>
         <table>
@@ -243,12 +270,18 @@ const animation = ref(null);
 const curveAnimation = ref(null);
 const multipleNum = ref(0.0);
 const betAmount = ref(10);
+const collect = ref("2.00");
 const currentResult = ref(0);
 
 const isGameStarted = ref(false);
 const isBet = ref(false);
 const cashouted = ref(false);
 const isCrashed = ref(false);
+const isAuto = ref(false);
+
+watch(isAuto, (newValue) => {
+  console.log(newValue);
+});
 
 const rank = ref([]);
 
@@ -367,13 +400,16 @@ const startGame = () => {
   isGameStarted.value = true;
   animation.value.play();
   curveAnimation.value.play();
+  if (isAuto.value) {
+    doBet();
+  }
 };
 
 const crashGame = () => {
   console.log("Crash!");
   animation.value.pause();
   curveAnimation.value.pause();
-  betResult.value.push(multipleNum.value);
+  betResult.value.push(result.value);
   isCrashed.value = true;
 };
 
@@ -388,6 +424,7 @@ const doBet = () => {
 };
 
 const cashout = () => {
+  if (cashouted.value) return;
   cashouted.value = true;
   balance.value += betAmount.value * multipleNum.value;
   socket.emit("cashout", multipleNum.value);
@@ -395,8 +432,15 @@ const cashout = () => {
     title: "You Won!!!",
     text: (betAmount.value * multipleNum.value).toFixed(2),
     icon: "success",
+    timer: 2000,
   });
 };
+
+watch(multipleNum, (value) => {
+  if (value >= collect.value && isAuto.value && isBet.value) {
+    cashout();
+  }
+});
 
 /**
  * 將投注金額減半
@@ -433,6 +477,20 @@ const double = () => {
 const max = () => {
   if (isGameStarted.value) return;
   betAmount.value = Math.floor(balance.value);
+};
+
+const minus = () => {
+  // 將字串轉為浮點數
+  const currentValue = parseFloat(collect.value);
+  // 減 1 並確保不小於 2
+  collect.value = Math.max(currentValue - 0.01, 2).toFixed(2);
+};
+
+const plus = () => {
+  // 將字串轉為浮點數
+  const currentValue = parseFloat(collect.value);
+  // 加 0.01 並保留兩位小數
+  collect.value = (currentValue + 0.01).toFixed(2);
 };
 
 // 新增一個變數追蹤輸入字串
